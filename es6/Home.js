@@ -45,16 +45,25 @@ function priceListResponse(message) {
     const { bestBid, bestAsk } = jsonData;
     const midprice = (bestBid + bestAsk) / 2
 
-    if (midpriceArray.length <= 30) {
-      midpriceArray.push(midprice)
-    }
-    jsonData.midprice = midpriceArray
+    // if (midpriceArray.length <= 30) {
+    //   midpriceArray.push(midprice)
+    // }
+    // jsonData.midprice = midpriceArray
     const tableHeaderCreated = createTableHeader()
     if (tableHeaderCreated) {
       const index = currencyDataArray.findIndex(currency => currency.name == jsonData.name)
       if (index >= 0) {
+        let currentMidPriceArray = currencyDataArray[index].midprice
+        if (currentMidPriceArray.length >= 30) {
+          currentMidPriceArray.shift()
+        }
+        currentMidPriceArray.push(midprice)
+        jsonData.midprice = currentMidPriceArray;
         currencyDataArray[index] = jsonData
       } else {
+        let newMidPriceArray = []
+        newMidPriceArray.push(midprice)
+        jsonData.midprice = newMidPriceArray
         currencyDataArray.push(jsonData)
       }
       currencyDataArray.sort(function (a, b) {
@@ -62,7 +71,7 @@ function priceListResponse(message) {
       });
       // console.log(currencyDataArray.length)
       currencyDataArray.map((item, index) => {
-        console.log(index)
+        // index == 0 && console.log(item.midprice)
         const table = document.getElementById("bid-table");
         let row = table.insertRow();
         for (let [key, value] of Object.entries(item)) {
@@ -72,7 +81,7 @@ function priceListResponse(message) {
             let cell = row.insertCell();
             cell.id = sparklineId
             var sparkline = new Sparkline(document.getElementById(sparklineId));
-            sparkline.draw(midpriceArray)
+            sparkline.draw(value)
           } else {
             let cell = row.insertCell();
             cell.innerHTML = value;
