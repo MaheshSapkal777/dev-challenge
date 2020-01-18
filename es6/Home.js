@@ -21,41 +21,40 @@ function getCurrencyData() {
   client.subscribe(priceUrl, priceListRespons);
 }
 function createTableHeader() {
-  const newTable = '<table id="bid-table">' +
-    '<tr><th>Name</th>' +
-    '<th>Best Bid</th>' +
-    '<th>Best Ask</th>' +
-    '<th>Open Bid</th>' +
-    '<th>Open Ask</th>' +
-    '<th>Last Change Ask</th>' +
-    '<th>Last Change Bid</th>' +
-    '</tr>' +
-    '</table>';
+  const newTable = '<table id="bid-table"></table>'
   document.getElementById('root').innerHTML = newTable
+  const tableHeaders = ['Name', 'Best Bid', 'Best Ask', 'Open Bid', 'Open Ask', 'Last Change Ask', 'Last Change Bid']
+  const table = document.getElementById("bid-table");
+  let header = table.createTHead();
+  let row = header.insertRow();
+  tableHeaders.map((title) => {
+    let cell = row.insertCell();
+    cell.innerHTML = title;
+  })
+  return true
 }
 function priceListRespons(message) {
   const data = message.body
   if (data) {
     const jsonData = JSON.parse(data);
-    createTableHeader()
-    const index = currencyDataArray.findIndex(currency => currency.name == jsonData.name)
-    if (index >= 0) {
-      currencyDataArray[index] = jsonData
-    } else {
-      currencyDataArray.push(jsonData)
-    }
-    console.log(currencyDataArray.length)
-    let tableData = ''
-    currencyDataArray.map((item) => {
-      var table = document.getElementById("bid-table");
-      var row = table.insertRow();
-      for (let [key, value] of Object.entries(item)) {
-        var cell1 = row.insertCell();
-        cell1.innerHTML = value;
+    const tableHeaderCreated = createTableHeader()
+    if (tableHeaderCreated) {
+      const index = currencyDataArray.findIndex(currency => currency.name == jsonData.name)
+      if (index >= 0) {
+        currencyDataArray[index] = jsonData
+      } else {
+        currencyDataArray.push(jsonData)
       }
+      console.log(currencyDataArray.length)
+      currencyDataArray.map((item) => {
+        const table = document.getElementById("bid-table");
+        let row = table.insertRow();
+        for (let [key, value] of Object.entries(item)) {
+          let cell = row.insertCell();
+          cell.innerHTML = value;
+        }
+      })
     }
-    )
-    document.getElementById('bid-table').innerHtml = tableData;
   }
 }
 
