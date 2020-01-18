@@ -18,7 +18,7 @@ client.connect({}, connectCallback, function (error) {
 })
 
 function getCurrencyData() {
-  client.subscribe(priceUrl, priceListRespons);
+  client.subscribe(priceUrl, priceListResponse);
 }
 function createTableHeader() {
   const newTable = '<table id="bid-table"></table>'
@@ -34,7 +34,7 @@ function createTableHeader() {
   })
   return true
 }
-function priceListRespons(message) {
+function priceListResponse(message) {
   const data = message.body
   if (data) {
     const jsonData = JSON.parse(data);
