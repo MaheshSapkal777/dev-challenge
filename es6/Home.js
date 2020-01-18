@@ -29,6 +29,7 @@ function createTableHeader() {
   let row = header.insertRow();
   tableHeaders.map((title) => {
     let cell = row.insertCell();
+    cell.class = 'table-header'
     cell.innerHTML = title;
   })
   return true
