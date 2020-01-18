@@ -1,6 +1,6 @@
 const url = "ws://localhost:8011/stomp"
 const priceUrl = "/fx/prices"
-let bidDataArray = [];
+let currencyDataArray = [];
 const client = Stomp.client(url)
 let tableHeaderPresent = false;
 client.debug = function (msg) {
@@ -38,15 +38,15 @@ function priceListRespons(message) {
   if (data) {
     const jsonData = JSON.parse(data);
     createTableHeader()
-    const index = bidDataArray.findIndex(p => p.name == jsonData.name)
+    const index = currencyDataArray.findIndex(currency => currency.name == jsonData.name)
     if (index >= 0) {
-      bidDataArray[index] = jsonData
+      currencyDataArray[index] = jsonData
     } else {
-      bidDataArray.push(jsonData)
+      currencyDataArray.push(jsonData)
     }
-    console.log(bidDataArray.length)
+    console.log(currencyDataArray.length)
     let tableData = ''
-    bidDataArray.map((item) => {
+    currencyDataArray.map((item) => {
       var table = document.getElementById("bid-table");
       var row = table.insertRow();
       for (let [key, value] of Object.entries(item)) {
