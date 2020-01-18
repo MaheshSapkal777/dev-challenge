@@ -36,7 +36,6 @@ function createTableHeader() {
   return true
 }
 
-// The last column should be a live updating sparkline which shows the midprice over the last 30 seconds. The x axis should be time. The midprice can be calculated by adding the bestBid and bestAsk fields together and dividing by 2.
 function priceListResponse(message) {
   const data = message.body
   if (data) {
