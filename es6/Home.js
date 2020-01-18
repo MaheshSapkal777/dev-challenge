@@ -45,6 +45,9 @@ function priceListRespons(message) {
       } else {
         currencyDataArray.push(jsonData)
       }
+      currencyDataArray.sort(function (a, b) {
+        return a.lastChangeBid - b.lastChangeBid;
+      });
       console.log(currencyDataArray.length)
       currencyDataArray.map((item) => {
         const table = document.getElementById("bid-table");
