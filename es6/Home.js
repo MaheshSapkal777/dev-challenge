@@ -41,14 +41,8 @@ function priceListResponse(message) {
   const data = message.body
   if (data) {
     const jsonData = JSON.parse(data);
-
     const { bestBid, bestAsk } = jsonData;
     const midprice = (bestBid + bestAsk) / 2
-
-    // if (midpriceArray.length <= 30) {
-    //   midpriceArray.push(midprice)
-    // }
-    // jsonData.midprice = midpriceArray
     const tableHeaderCreated = createTableHeader()
     if (tableHeaderCreated) {
       const index = currencyDataArray.findIndex(currency => currency.name == jsonData.name)
@@ -59,11 +53,25 @@ function priceListResponse(message) {
         }
         currentMidPriceArray.push(midprice)
         jsonData.midprice = currentMidPriceArray;
-        currencyDataArray[index] = jsonData
+        jsonData.lastMidPrice = midprice;
+        currencyDataArray[index] = jsonData;
+        //update other currency midprice to last one.
+        currencyDataArray.map((data, idx) => {
+          if (idx !== index) {
+            if (data.midprice.length >= 30) {
+              data.midprice.shift()
+            }
+            let newArray = data.midprice;
+            newArray.push(data.lastMidPrice);
+            data.midprice = newArray;
+            currencyDataArray[idx] = data;
+          }
+        })
       } else {
         let newMidPriceArray = []
         newMidPriceArray.push(midprice)
         jsonData.midprice = newMidPriceArray
+        jsonData.lastMidPrice = midprice;
         currencyDataArray.push(jsonData)
       }
       currencyDataArray.sort(function (a, b) {
@@ -83,21 +91,14 @@ function priceListResponse(message) {
             var sparkline = new Sparkline(document.getElementById(sparklineId));
             sparkline.draw(value)
           } else {
-            let cell = row.insertCell();
-            cell.innerHTML = value;
+            if (key !== 'lastMidPrice') {
+              let cell = row.insertCell();
+              cell.innerHTML = value;
+            }
+
           }
         }
       })
     }
   }
 }
-
-  // {
-  //   "name": "usdjpy",
-  //   "bestBid": 106.7297012204255,
-  //   "bestAsk": 107.25199883791178,
-  //   "openBid": 107.22827132623534,
-  //   "openAsk": 109.78172867376465,
-  //   "lastChangeAsk": -4.862314256927661,
-  //   "lastChangeBid": -2.8769211401569663
-  // }
