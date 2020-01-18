@@ -1,9 +1,9 @@
 const url = "ws://localhost:8011/stomp"
 const priceUrl = "/fx/prices"
-let newArray = [];
+let bidDataArray = [];
 const client = Stomp.client(url)
 let tableHeaderPresent = false;
-client.debug = function(msg) {
+client.debug = function (msg) {
   if (global.DEBUG) {
     console.info(msg)
   }
@@ -13,53 +13,49 @@ function connectCallback(e) {
   getCurrencyData();
 }
 
-client.connect({}, connectCallback, function(error) {
+client.connect({}, connectCallback, function (error) {
   alert(error.headers.message)
 })
 
-function getCurrencyData(){
+function getCurrencyData() {
   client.subscribe(priceUrl, priceListRespons);
 }
-function createTableHeader(){
-  const newTable = '<table id="bid-table">'+
-    '<tr><th>Name</th>'+
-    '<th>Best Bid</th>'+
-    '<th>Best Ask</th>'+
-    '<th>Open Bid</th>'+
-    '<th>Open Ask</th>'+
-    '<th>Last Change Ask</th>'+
-    '<th>Last Change Bid</th>'+
-    '</tr>'+
+function createTableHeader() {
+  const newTable = '<table id="bid-table">' +
+    '<tr><th>Name</th>' +
+    '<th>Best Bid</th>' +
+    '<th>Best Ask</th>' +
+    '<th>Open Bid</th>' +
+    '<th>Open Ask</th>' +
+    '<th>Last Change Ask</th>' +
+    '<th>Last Change Bid</th>' +
+    '</tr>' +
     '</table>';
-  document.getElementById('root').innerHTML= newTable
+  document.getElementById('root').innerHTML = newTable
 }
-function priceListRespons(message){
+function priceListRespons(message) {
   const data = message.body
-  var obj = JSON.parse(data);
   if (data) {
+    const jsonData = JSON.parse(data);
     createTableHeader()
-   var index = newArray.findIndex(p => p.name == obj.name)
-    if(index>=0){
-      newArray[index] = obj
-    }else{
-      newArray.push(obj)
+    const index = bidDataArray.findIndex(p => p.name == jsonData.name)
+    if (index >= 0) {
+      bidDataArray[index] = jsonData
+    } else {
+      bidDataArray.push(jsonData)
     }
-  console.log(newArray.length)
-  
-  let tableData = ''
-  newArray.map((item)=>{
-   var table = document.getElementById("bid-table");
-    var row = table.insertRow();
-    for (let [key, value] of Object.entries(item)) {
+    console.log(bidDataArray.length)
+    let tableData = ''
+    bidDataArray.map((item) => {
+      var table = document.getElementById("bid-table");
+      var row = table.insertRow();
+      for (let [key, value] of Object.entries(item)) {
         var cell1 = row.insertCell();
-         cell1.innerHTML = value;
+        cell1.innerHTML = value;
+      }
     }
-   }
-  )
-  console.log(tableData)
-
-  document.getElementById('bid-table').innerHtml= tableData;
-
+    )
+    document.getElementById('bid-table').innerHtml = tableData;
   }
 }
 
