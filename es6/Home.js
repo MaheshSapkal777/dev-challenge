@@ -108,7 +108,6 @@ function renderTableData() {
     const table = document.getElementById("bid-table");
     let row = table.insertRow();
     for (let [key, value] of Object.entries(item)) {
-      index === 0 && console.log(item.midprice)
       /**render sparkline cell */
       if (key === 'midprice') {
         const sparklineId = `sparkline_${index}`;
