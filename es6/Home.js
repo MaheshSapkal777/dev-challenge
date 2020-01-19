@@ -102,7 +102,7 @@ function updateOtherCurrencyMidprice(index) {
     }
   })
 }
-/** create table view for currency data */
+/** create table data view for currency data */
 function renderTableData() {
   currencyDataArray.map((item, index) => {
     const table = document.getElementById("bid-table");
