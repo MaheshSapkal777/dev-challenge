@@ -11,6 +11,7 @@ client.debug = function (msg) {
 }
 function connectCallback(e) {
   console.log(e)
+  /** to get currency data from socket */
   getCurrencyData();
 }
 
@@ -21,6 +22,7 @@ client.connect({}, connectCallback, function (error) {
 function getCurrencyData() {
   client.subscribe(priceUrl, priceListResponse);
 }
+/** function to render table header */
 function createTableHeader() {
   const newTable = '<table id="bid-table"></table>'
   document.getElementById('root').innerHTML = newTable
@@ -35,69 +37,92 @@ function createTableHeader() {
   })
   return true
 }
-
+/** callback function for price data  */
 function priceListResponse(message) {
   const data = message.body
   if (data) {
     const jsonData = JSON.parse(data);
     const { bestBid, bestAsk } = jsonData;
     const midprice = (bestBid + bestAsk) / 2
-    const tableHeaderCreated = createTableHeader()
+    const tableHeaderCreated = createTableHeader();
     if (tableHeaderCreated) {
-      const index = currencyDataArray.findIndex(currency => currency.name == jsonData.name)
+      const index = currencyDataArray.findIndex(currency => currency.name == jsonData.name) //check if currency already exist in table.
       if (index >= 0) {
-        let currentMidPriceArray = currencyDataArray[index].midprice
-        if (currentMidPriceArray.length >= 30) {
-          currentMidPriceArray.shift()
-        }
-        currentMidPriceArray.push(midprice)
-        jsonData.midprice = currentMidPriceArray;
-        jsonData.lastMidPrice = midprice;
-        currencyDataArray[index] = jsonData;
-        //update other currency midprice to last one.
-        currencyDataArray.map((data, idx) => {
-          if (idx !== index) {
-            if (data.midprice.length >= 30) {
-              data.midprice.shift()
-            }
-            let newArray = data.midprice;
-            newArray.push(data.lastMidPrice);
-            data.midprice = newArray;
-            currencyDataArray[idx] = data;
-          }
-        })
+        /**update existing currency data */
+        updateExitingCurrencyData(index, midprice, jsonData);
       } else {
-        let newMidPriceArray = []
-        newMidPriceArray.push(midprice)
-        jsonData.midprice = newMidPriceArray
-        jsonData.lastMidPrice = midprice;
-        currencyDataArray.push(jsonData)
+        /**create new entry for currency data */
+        creatNewCurrencyData(midprice, jsonData);
       }
+      /** sort currency data by best last changed bid */
       currencyDataArray.sort(function (a, b) {
         return a.lastChangeBid - b.lastChangeBid;
       });
-      // console.log(currencyDataArray.length)
-      currencyDataArray.map((item, index) => {
-        // index == 0 && console.log(item.midprice)
-        const table = document.getElementById("bid-table");
-        let row = table.insertRow();
-        for (let [key, value] of Object.entries(item)) {
-          // console.log(key)
-          if (key === 'midprice') {
-            const sparklineId = `sparkline_${index}`;
-            let cell = row.insertCell();
-            cell.id = sparklineId
-            var sparkline = new Sparkline(document.getElementById(sparklineId));
-            sparkline.draw(value)
-          } else {
-            if (key !== 'lastMidPrice') {
-              let cell = row.insertCell();
-              cell.innerHTML = value;
-            }
-
-          }
-        }
-      })
+      /**render data to table view */
+      renderTableData();
     }
   }
+}
+
+/**create new entry for those currecy data, which is not present in table */
+function creatNewCurrencyData(midprice, jsonData) {
+  let newMidPriceArray = []
+  newMidPriceArray.push(midprice)
+  jsonData.midprice = newMidPriceArray
+  jsonData.lastMidPrice = midprice;
+  currencyDataArray.push(jsonData)
+}
+
+/** update new price data for existing currency */
+function updateExitingCurrencyData(index, midprice, jsonData) {
+  let currentMidPriceArray = currencyDataArray[index].midprice
+  /**check if midprice data is recent 30 sec. */
+  if (currentMidPriceArray.length >= 30) {
+    currentMidPriceArray.shift() /**remove first sec. value to update new one */
+  }
+  currentMidPriceArray.push(midprice)
+  jsonData.midprice = currentMidPriceArray;
+  jsonData.lastMidPrice = midprice;
+  currencyDataArray[index] = jsonData;
+  updateOtherCurrencyMidprice(index);
+}
+
+/**update other currency midprice to last one. */
+function updateOtherCurrencyMidprice(index) {
+  currencyDataArray.map((data, idx) => {
+    if (idx !== index) {
+      /**check if midprice data is recent 30 sec. */
+      if (data.midprice.length >= 30) {
+        data.midprice.shift()    /**remove first sec. value to update new one */
+      }
+      let newArray = data.midprice;
+      newArray.push(data.lastMidPrice);
+      data.midprice = newArray;
+      currencyDataArray[idx] = data;
+    }
+  })
+}
+/** create table view for currency data */
+function renderTableData() {
+  currencyDataArray.map((item, index) => {
+    const table = document.getElementById("bid-table");
+    let row = table.insertRow();
+    for (let [key, value] of Object.entries(item)) {
+      index === 0 && console.log(item.midprice)
+      /**render sparkline cell */
+      if (key === 'midprice') {
+        const sparklineId = `sparkline_${index}`;
+        let cell = row.insertCell();
+        cell.id = sparklineId
+        let sparkline = new Sparkline(document.getElementById(sparklineId));
+        sparkline.draw(value)
+      } else {
+        if (key !== 'lastMidPrice') {
+          let cell = row.insertCell();
+          cell.innerHTML = value;
+        }
+
+      }
+    }
+  })
 }

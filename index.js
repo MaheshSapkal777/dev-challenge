@@ -16,24 +16,6 @@ require('./es6/Home')
 // Change this to get detailed logging from the stomp library
 global.DEBUG = false
 
-const url = "ws://localhost:8011/stomp"
-const priceUrl = "/fx/prices"
-
-// const client = Stomp.client(url)
-// client.debug = function(msg) {
-//   if (global.DEBUG) {
-//     console.info(msg)
-//   }
-// }
-
-// function connectCallback(e) {
-//   // document.getElementById('stomp-status').innerHTML = "It has now successfully connected to a stomp server serving price updates for some foreign exchange currency pairs."
-//   console.log(e)
-//   getCurrencyData();
-// }
-
-// client.connect({}, connectCallback, function(error) {
-//   alert(error.headers.message)
-// })
+/** All code has been written in es6, you can find code inside es6/Home.js file */
 
 
