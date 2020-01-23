@@ -11,7 +11,7 @@ client.debug = function (msg) {
 
 function connectCallback(e) {
   console.log(e)
-  subscribePriceList(); /** get currency data from socket */
+  subscribePriceList(); /** Get currency data from socket */
 }
 
 client.connect({}, connectCallback, function (error) {
@@ -22,35 +22,35 @@ function subscribePriceList() {
   client.subscribe(priceUrl, onPriceListResponse);
 }
 
-/** callback function for price data response */
+/** Callback function for price data response */
 function onPriceListResponse(response) {
   const data = response.body
   if (data) {
     const priceData = JSON.parse(data);
     const { bestBid, bestAsk } = priceData;
     const midprice = (bestBid + bestAsk) / 2
-    const isTableCreated = createTableWithHeaders();
+    const isTableCreated = createTable();
     if (isTableCreated) {
-      const index = currencyDataArray.findIndex(currency => currency.name == priceData.name) //check if currency already exist in table.
+      const index = currencyDataArray.findIndex(currency => currency.name == priceData.name) //Check if currency already exists in the table.
       if (index >= 0) {
-        /**update existing currency data */
-        updateExistingCurrencyDataInArray(index, midprice, priceData);
+        /** Update existing currency data */
+        updateData(index, midprice, priceData);
       } else {
-        /**create new entry for currency data */
-        addNewCurrencyDataInArray(midprice, priceData);
+        /** Create a new entry for currency data */
+        addData(midprice, priceData);
       }
-      /** sort currency data by best last changed bid */
+      /** Sort currency data by best last changed bid */
       currencyDataArray.sort(function (a, b) {
         return a.lastChangeBid - b.lastChangeBid;
       });
-      /**render data to table view */
-      renderTableData();
+      /** Render data to table view */
+      renderTable();
     }
   }
 }
 
-/** function to render empty table with headers */
-function createTableWithHeaders() {
+/** Function to render the empty table with headers */
+function createTable() {
   const newTable = '<table id="bid-table"></table>'
   document.getElementById('root').innerHTML = newTable
   const tableHeaders = ['Name', 'Best Bid', 'Best Ask', 'Open Bid', 'Open Ask', 'Last Change Ask', 'Last Change Bid', 'Midprice']
@@ -65,8 +65,8 @@ function createTableWithHeaders() {
   return true
 }
 
-/**create new entry for those currecy data, which is not present in table */
-function addNewCurrencyDataInArray(midprice, priceData) {
+/** Create a new entry for those currency data, which does not exist in the table. */
+function addData(midprice, priceData) {
   let newMidPriceArray = []
   newMidPriceArray.push(midprice)
   priceData.midprice = newMidPriceArray
@@ -74,27 +74,27 @@ function addNewCurrencyDataInArray(midprice, priceData) {
   currencyDataArray.push(priceData)
 }
 
-/** update new price data for existing currency */
-function updateExistingCurrencyDataInArray(index, midprice, priceData) {
+/** Update new price data for existing currency in the table. */
+function updateData(index, midprice, priceData) {
   let currentMidPriceArray = currencyDataArray[index].midprice
-  /**check if midprice data is recent 30 sec. */
+  /** Check if midprice data is recent 30 sec. */
   if (currentMidPriceArray.length >= 30) {
-    currentMidPriceArray.shift() /**remove first sec. value to update new one */
+    currentMidPriceArray.shift() /** Remove first sec. value to update new one */
   }
   currentMidPriceArray.push(midprice)
   priceData.midprice = currentMidPriceArray;
   priceData.lastMidPrice = midprice;
   currencyDataArray[index] = priceData;
-  updateMidPriceForRemainingCurrencies(index);
+  updateMidPrice(index);
 }
 
-/**update remaining currency midprice to last one. */
-function updateMidPriceForRemainingCurrencies(index) {
+/** Update remaining currency midprice to last one. */
+function updateMidPrice(index) {
   currencyDataArray.map((data, idx) => {
     if (idx !== index) {
-      /**check if midprice data is recent 30 sec. */
+      /** Check if midprice data is recent 30 sec. */
       if (data.midprice.length >= 30) {
-        data.midprice.shift()    /**remove first sec. value to update new one */
+        data.midprice.shift()    /** Remove the first sec. value to update the new one */
       }
       let newArray = data.midprice;
       newArray.push(data.lastMidPrice);
@@ -104,13 +104,13 @@ function updateMidPriceForRemainingCurrencies(index) {
   })
 }
 
-/** insert currency data into table view from currency array. */
-function renderTableData() {
+/** Insert currency data into table view from currency array. */
+function renderTable() {
   currencyDataArray.map((item, index) => {
     const table = document.getElementById("bid-table");
     let row = table.insertRow();
     for (let [key, value] of Object.entries(item)) {
-      /**render sparkline cell */
+      /** Render sparkline cell */
       if (key === 'midprice') {
         const sparklineId = `sparkline_${index}`;
         let cell = row.insertCell();
